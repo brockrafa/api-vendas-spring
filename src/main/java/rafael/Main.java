@@ -20,13 +20,13 @@ public class Main {
     public CommandLineRunner init(@Autowired ClientesRepository clientes, @Autowired ProdutoRepository produtos){
         return args -> {
 
-            Cliente cliente1 = new Cliente("Rafael");
+            Cliente cliente1 = new Cliente("Rafael","17957032702");
             clientes.save(cliente1);
 
-            Produto produto = new Produto("Mouse gamer",new BigDecimal("10.90"));
+            Produto produto = new Produto("Mouse gamer",new BigDecimal("10.00"));
             produtos.save(produto);
 
-            Produto produto2 = new Produto("Teclado gamer",new BigDecimal("10.90"));
+            Produto produto2 = new Produto("Teclado gamer",new BigDecimal("10.00"));
             produtos.save(produto2);
         };
     }

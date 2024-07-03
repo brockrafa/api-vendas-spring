@@ -3,14 +3,12 @@ package rafael.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import rafael.domain.entity.Cliente;
-import rafael.domain.entity.ItemPedido;
-import rafael.domain.entity.Pedido;
-import rafael.domain.entity.Produto;
+import rafael.domain.entity.*;
 import rafael.domain.repository.ClientesRepository;
 import rafael.domain.repository.ItemPedidoRepository;
 import rafael.domain.repository.PedidosRepository;
 import rafael.domain.repository.ProdutoRepository;
+import rafael.exception.PedidoNaoEncontradoException;
 import rafael.exception.RegraNegocioException;
 import rafael.rest.dto.ItemPedidoDTO;
 import rafael.rest.dto.PedidoDTO;
@@ -18,6 +16,7 @@ import rafael.service.PedidoService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,12 +44,28 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setTotal(dto.getTotal());
         pedido.setDataPedido(LocalDate.now());
         pedido.setCliente(cliente);
+        pedido.setStatus(StatusPedido.REALIZADO);
 
         List<ItemPedido> itens = converterItems(pedido,dto.getItens());
         repository.save(pedido);
         itemPedidos.saveAll(itens);
         pedido.setItens(itens);
         return pedido;
+    }
+
+    @Override
+    @Transactional
+    public void atualizaStatus(Integer id, StatusPedido status) {
+        repository.findById(id)
+                .map(pedido -> {
+                    pedido.setStatus(status);
+                    return repository.save(pedido);
+                }).orElseThrow(() -> new PedidoNaoEncontradoException());
+    }
+
+    @Override
+    public Optional<Pedido> obterPedido(Integer id) {
+        return repository.findByIdFetchItens(id);
     }
 
     private List<ItemPedido> converterItems(Pedido pedido,List<ItemPedidoDTO> dto){
